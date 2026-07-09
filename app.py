@@ -4,7 +4,7 @@ import io
 
 st.set_page_config(page_title="SysVoid // Otonom Ağ", layout="wide")
 
-# Dosya okuma yok, veri kodun içinde (File Not Found hatası bitti)
+# Veri girişi
 csv_data = """Sehir,Ilce,Mahalle,Pet,Cam,Teneke,Durum
 Ankara,Sincan,Fatih,45,88,12,SAĞLIKLI
 Ankara,Sincan,Törekent,10,5,2,SAĞLIKLI
@@ -16,6 +16,7 @@ df = pd.read_csv(io.StringIO(csv_data))
 
 st.title("⚡ SYSVOID // TÜRKİYE VERİ AĞI")
 
+# Dinamik Filtreleme
 sehir = st.selectbox("Şehir:", df['Sehir'].unique())
 ilce = st.selectbox("İlçe:", df[df['Sehir'] == sehir]['Ilce'].unique())
 mahalle = st.selectbox("Mahalle:", df[df['Ilce'] == ilce]['Mahalle'].unique())
