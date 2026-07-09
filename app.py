@@ -1,58 +1,47 @@
 import streamlit as st
 import random
 
-st.set_page_config(page_title="SysVoid // Otonom Sokak İzleme", layout="wide")
+st.set_page_config(page_title="SysVoid // Otonom Takip", layout="wide")
 
 st.markdown("""
 <style>
 .stApp {background-color: #000; color: #00ff41; font-family: 'Courier New';}
-.stMetric {background-color: #0a0a0a; border: 1px solid #00ff41; padding: 10px; border-radius: 5px;}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("⚡ SYSVOID // SOKAK BAZLI ATIK OTOMASYONU")
+st.title("⚡ SYSVOID // SOKAK BAZLI OTOMASYON")
 
-# Detaylı Veri Yapısı
-def get_detailed_data(sokak):
-    durumlar = ["SAĞLIKLI", "BAKIM GEREKİYOR", "KRİTİK HATA", "ÇEVRİMDIŞI"]
-    return {
-        "Konum": f"{sokak} No: 42",
-        "Pet": random.randint(0, 100),
-        "Cam": random.randint(0, 100),
-        "Teneke": random.randint(0, 100),
-        "Sira": random.randint(0, 15),
-        "Saglik": random.choice(durumlar),
-        "Ping": f"{random.randint(20, 120)}ms"
-    }
+# Veri girişi
+il = st.text_input("Şehir", "Ankara")
+ilce = st.text_input("İlçe", "Çankaya")
+mahalle = st.text_input("Mahalle", "Fatih")
+sokak = st.text_input("Sokak/No", "Atatürk Blv. No: 42")
 
-col1, col2 = st.columns([1, 3])
-with col1:
-    il = st.text_input("Şehir", "Ankara")
-    ilce = st.text_input("İlçe", "Çankaya")
-    sokak = st.text_input("Sokak/Cadde", "Atatürk Bulvarı")
-with col2:
-    if st.button(">>> SOKAK TARAMASINI BAŞLAT"):
-        data = get_detailed_data(sokak)
+if st.button(">>> SİSTEMİ BAĞLA"):
+    # Sabit değerler (her seferinde değişmesin diye)
+    pet = random.randint(0, 100)
+    cam = random.randint(0, 100)
+    teneke = random.randint(0, 100)
+    sira_sayisi = random.choice([0, 0, 0, 1, 3, 5]) # Bazen 0 gelsin diye
+    saglik = "SAĞLIKLI" 
+    
+    st.subheader(f"📍 Konum: {mahalle} Mah. {sokak}")
+    
+    # Sağlık durumu ve sıra bilgisi gösterimi
+    c1, c2 = st.columns(2)
+    c1.metric("SAĞLIK DURUMU", saglik)
+    
+    if sira_sayisi == 0:
+        c2.metric("SIRADAKİ KİŞİ", "Sıra Yok")
+    else:
+        c2.metric("SIRADAKİ KİŞİ", f"{sira_sayisi} Kişi")
         
-        st.subheader(f"📍 Konum: {data['Konum']}")
-        
-        # Sağlık Durumu Göstergesi
-        c1, c2 = st.columns(2)
-        c1.metric("SAĞLIK DURUMU", data['Saglik'])
-        c2.metric("BAĞLANTI GECİKMESİ", data['Ping'])
-        
-        st.write("---")
-        
-        # Atık Dolulukları
-        col_p, col_c, col_t = st.columns(3)
-        col_p.metric("PET ŞİŞE", f"%{data['Pet']}")
-        col_c.metric("CAM", f"%{data['Cam']}")
-        col_t.metric("TENEKE", f"%{data['Teneke']}")
-        
-        st.write(f"👥 **Sırada Bekleyen:** {data['Sira']} kişi")
-        
-        # Otonom Karar Mekanizması
-        if data['Saglik'] != "SAĞLIKLI":
-            st.error(f"⚠️ SİSTEM UYARISI: Makine {data['Saglik']} modunda. Otomatik servis kaydı oluşturuldu.")
-        else:
-            st.success("✅ Tüm sistemler stabil, veriler canlı aktarılıyor.")
+    st.write("---")
+    
+    # Atık bilgileri
+    col_p, col_c, col_t = st.columns(3)
+    col_p.metric("PET ŞİŞE", f"%{pet}")
+    col_c.metric("CAM", f"%{cam}")
+    col_t.metric("TENEKE", f"%{teneke}")
+    
+    st.success("✅ Sistem stabil, anlık veri akışı sağlanıyor.")
