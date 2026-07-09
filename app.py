@@ -1,35 +1,46 @@
 import streamlit as st
-import random
-import time
 
-st.set_page_config(page_title="SysVoid // Otonom Kontrol", layout="wide")
+st.set_page_config(page_title="SysVoid // TR Ağ Tarayıcı", layout="wide")
 
-st.markdown("""
-<style>
-.stApp {background-color: #050505; color: #00FF00;}
-</style>
-""", unsafe_allow_html=True)
+st.title("⚡ SYSVOID // TÜRKİYE GENELİ ATIK AĞI")
 
-st.title("⚡ SYSVOID // OTONOM SİSTEM AĞI")
-
-# Otonom Veri Motoru
-if 'data' not in st.session_state:
-    st.session_state.data = {
-        "Fatih/No:42": {"Pet": 20, "Cam": 10, "Teneke": 5, "Sira": 0, "Durum": "SAĞLIKLI"},
-        "Kızılay/Meydan": {"Pet": 85, "Cam": 90, "Teneke": 40, "Sira": 12, "Durum": "KRİTİK"}
+# OTONOM OKUYUCU MOTORU (Şehir/İlçe/Mahalle hiyerarşisi)
+def turkiye_ag_oku(sehir, ilce, mahalle):
+    # Otonom Mimar'ın genişletilmiş veri ağı
+    ag = {
+        "ankara": {
+            "cankaya": {
+                "fatih": {"pet": 45, "cam": 88, "teneke": 12, "sira": 0, "durum": "SAĞLIKLI"},
+                "kızılay": {"pet": 92, "cam": 5, "teneke": 70, "sira": 15, "durum": "BAKIM GEREKİYOR"}
+            }
+        }
     }
+    
+    # Kademeli Okuma
+    try:
+        return ag[sehir.lower()][ilce.lower()][mahalle.lower()]
+    except:
+        return None
 
-# Otomatik Tarama Butonu
-if st.button(">>> SİSTEMİ OTONOM TARA"):
-    with st.spinner('Ağ taranıyor...'):
-        time.sleep(1) # Sistemin gerçek gibi çalışması için minik bir gecikme
-        for konum, veri in st.session_state.data.items():
-            st.subheader(f"📍 Konum: {konum}")
-            c1, c2, c3 = st.columns(3)
-            c1.metric("PET", f"%{veri['Pet']}")
-            c2.metric("CAM", f"%{veri['Cam']}")
-            c3.metric("TENEKE", f"%{veri['Teneke']}")
-            
-            durum_rengi = "green" if veri['Durum'] == "SAĞLIKLI" else "red"
-            st.markdown(f"**Durum:** :{durum_rengi}[{veri['Durum']}] | **Sıra:** {'Sıra Yok' if veri['Sira']==0 else str(veri['Sira'])+' Kişi'}")
-            st.write("---")
+# Arayüz
+col1, col2, col3 = st.columns(3)
+with col1: sehir = st.text_input("Şehir:")
+with col2: ilce = st.text_input("İlçe:")
+with col3: mahalle = st.text_input("Mahalle:")
+
+if st.button(">>> AĞI TARA"):
+    sonuc = turkiye_ag_oku(sehir, ilce, mahalle)
+    
+    if sonuc:
+        st.subheader(f"📍 {sehir.upper()} / {ilce.upper()} / {mahalle.upper()}")
+        
+        # Okuyucu Paneli
+        c1, c2, c3 = st.columns(3)
+        c1.metric("PET", f"%{sonuc['pet']}")
+        c2.metric("CAM", f"%{sonuc['cam']}")
+        c3.metric("TENEKE", f"%{sonuc['teneke']}")
+        
+        st.metric("SAĞLIK DURUMU", sonuc['durum'])
+        st.write(f"👥 Sırada: {'Sıra Yok' if sonuc['sira'] == 0 else str(sonuc['sira'])+' Kişi'}")
+    else:
+        st.error("Ağda bu lokasyon bulunamadı. (Test için: Ankara / Cankaya / Fatih)")
