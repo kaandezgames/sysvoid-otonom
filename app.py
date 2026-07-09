@@ -1,47 +1,37 @@
 import streamlit as st
-import random
 
-st.set_page_config(page_title="SysVoid // Otonom Takip", layout="wide")
+st.set_page_config(page_title="SysVoid // Veri Yönetim", layout="wide")
 
-st.markdown("""
-<style>
-.stApp {background-color: #000; color: #00ff41; font-family: 'Courier New';}
-</style>
-""", unsafe_allow_html=True)
+# Sistem Hafızası (Rastgele değil, kayıtlı veri)
+if 'makine_verisi' not in st.session_state:
+    st.session_state.makine_verisi = {
+        "durum": "SAĞLIKLI",
+        "pet": 0,
+        "cam": 0,
+        "teneke": 0,
+        "sira": 0
+    }
 
-st.title("⚡ SYSVOID // SOKAK BAZLI OTOMASYON")
+st.title("⚡ SYSVOID // MANUEL VERİ GİRİŞİ")
 
-# Veri girişi
-il = st.text_input("Şehir", "Ankara")
-ilce = st.text_input("İlçe", "Çankaya")
-mahalle = st.text_input("Mahalle", "Fatih")
-sokak = st.text_input("Sokak/No", "Atatürk Blv. No: 42")
+# Veri Girişleri
+col1, col2 = st.columns(2)
+with col1:
+    st.subheader("Makine Durumunu Güncelle")
+    st.session_state.makine_verisi["pet"] = st.number_input("Pet Doluluk (%)", 0, 100)
+    st.session_state.makine_verisi["cam"] = st.number_input("Cam Doluluk (%)", 0, 100)
+    st.session_state.makine_verisi["teneke"] = st.number_input("Teneke Doluluk (%)", 0, 100)
+    st.session_state.makine_verisi["sira"] = st.number_input("Sırada Bekleyen", 0, 50)
 
-if st.button(">>> SİSTEMİ BAĞLA"):
-    # Sabit değerler (her seferinde değişmesin diye)
-    pet = random.randint(0, 100)
-    cam = random.randint(0, 100)
-    teneke = random.randint(0, 100)
-    sira_sayisi = random.choice([0, 0, 0, 1, 3, 5]) # Bazen 0 gelsin diye
-    saglik = "SAĞLIKLI" 
+# Dashboard (Sadece senin girdiğin veriyi gösterir)
+with col2:
+    st.subheader("CANLI PANEL")
+    st.metric("SAĞLIK DURUMU", st.session_state.makine_verisi["durum"])
     
-    st.subheader(f"📍 Konum: {mahalle} Mah. {sokak}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("PET", f"%{st.session_state.makine_verisi['pet']}")
+    c2.metric("CAM", f"%{st.session_state.makine_verisi['cam']}")
+    c3.metric("TENEKE", f"%{st.session_state.makine_verisi['teneke']}")
     
-    # Sağlık durumu ve sıra bilgisi gösterimi
-    c1, c2 = st.columns(2)
-    c1.metric("SAĞLIK DURUMU", saglik)
-    
-    if sira_sayisi == 0:
-        c2.metric("SIRADAKİ KİŞİ", "Sıra Yok")
-    else:
-        c2.metric("SIRADAKİ KİŞİ", f"{sira_sayisi} Kişi")
-        
-    st.write("---")
-    
-    # Atık bilgileri
-    col_p, col_c, col_t = st.columns(3)
-    col_p.metric("PET ŞİŞE", f"%{pet}")
-    col_c.metric("CAM", f"%{cam}")
-    col_t.metric("TENEKE", f"%{teneke}")
-    
-    st.success("✅ Sistem stabil, anlık veri akışı sağlanıyor.")
+    sira_yazisi = "Sıra Yok" if st.session_state.makine_verisi["sira"] == 0 else f"{st.session_state.makine_verisi['sira']} Kişi"
+    st.metric("SIRADAKİ KİŞİ", sira_yazisi)
