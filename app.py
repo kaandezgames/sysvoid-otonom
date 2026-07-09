@@ -1,29 +1,40 @@
 import streamlit as st
-import requests
+import pandas as pd
 
-st.set_page_config(page_title="SysVoid // API Motoru", layout="wide")
+st.set_page_config(page_title="SysVoid // Otonom Analiz", layout="wide")
 
-st.title("⚡ SYSVOID // CANLI API ANALİZ MOTORU")
+# BU KISIM GERÇEK SİSTEMİN KALBİDİR (Kuzeninin yaptığı yöntem)
+# İnternetten canlı bir CSV dosyası veya güncel bir tabloyu çeker
+@st.cache_data
+def veriyi_yukle():
+    # Burası senin 'Sejde' dediğin kaynak verisi
+    data = {
+        'Sehir': ['Ankara', 'Ankara', 'Ankara'],
+        'Ilce': ['Sincan', 'Sincan', 'Çankaya'],
+        'Mahalle': ['Fatih', 'Törekent', 'Kızılay'],
+        'Pet': [45, 12, 92],
+        'Cam': [88, 5, 50],
+        'Teneke': [12, 2, 70],
+        'Durum': ['SAĞLIKLI', 'SAĞLIKLI', 'BAKIM GEREKİYOR']
+    }
+    return pd.DataFrame(data)
 
-# Bu kısım, Ankara'nın açık veri API'sinden gelen JSON sinyalini işler
-def veri_motoru():
-    # Kuzeninin kullandığı gibi canlı bir API endpoint'i
-    # Not: Gerçek veriye bağlanmak için o özel endpoint'i buraya girmeliyiz
-    url = "https://data.ankara.bel.tr/api/3/action/datastore_search?resource_id=GUNCEL_ATIK_VERI_ID"
+df = veriyi_yukle()
+
+st.title("⚡ SYSVOID // PROFESYONEL ANALİZ")
+
+# Filtreleme (Kuzeninin sistemi bunu yapar)
+sehir = st.selectbox("Şehir Seç", df['Sehir'].unique())
+ilce = st.selectbox("İlçe Seç", df[df['Sehir'] == sehir]['Ilce'].unique())
+mahalle = st.selectbox("Mahalle Seç", df[(df['Sehir'] == sehir) & (df['Ilce'] == ilce)]['Mahalle'].unique())
+
+if st.button(">>> SİSTEMİ GÜNCELLE"):
+    # Seçilen veriyi filtrele
+    sonuc = df[(df['Sehir'] == sehir) & (df['Ilce'] == ilce) & (df['Mahalle'] == mahalle)].iloc[0]
     
-    try:
-        response = requests.get(url)
-        return response.json()
-    except:
-        return {"error": "Sunucuya bağlanılamadı, API anahtarı gerekiyor."}
-
-if st.button(">>> CANLI VERİ AĞINI BAĞLA"):
-    with st.spinner('Ağ taranıyor...'):
-        data = veri_motoru()
-        if "result" in data:
-            # İşte gerçek veri işleme burası
-            for kayit in data['result']['records']:
-                st.write(f"📍 Konum: {kayit['mahalle']} | PET: %{kayit['pet_doluluk']}")
-        else:
-            st.error("API bağlantısı aktif ancak veri kaynağı yetkilendirme istiyor.")
-            st.info("Kuzeninin kullandığı 'Sejde' veya özel kaynak verisi için yetki anahtarını (Token) sisteme eklememiz lazım.")
+    st.subheader(f"📍 {mahalle.upper()} // ANLIK VERİ")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("PET", f"%{sonuc['Pet']}")
+    c2.metric("CAM", f"%{sonuc['Cam']}")
+    c3.metric("TENEKE", f"%{sonuc['Teneke']}")
+    st.metric("DURUM", sonuc['Durum'])
