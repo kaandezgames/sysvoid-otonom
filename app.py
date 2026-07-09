@@ -1,46 +1,22 @@
 import streamlit as st
+import requests
 
-st.set_page_config(page_title="SysVoid // TR Ağ Tarayıcı", layout="wide")
-
-st.title("⚡ SYSVOID // TÜRKİYE GENELİ ATIK AĞI")
-
-# OTONOM OKUYUCU MOTORU (Şehir/İlçe/Mahalle hiyerarşisi)
-def turkiye_ag_oku(sehir, ilce, mahalle):
-    # Otonom Mimar'ın genişletilmiş veri ağı
-    ag = {
-        "ankara": {
-            "cankaya": {
-                "fatih": {"pet": 45, "cam": 88, "teneke": 12, "sira": 0, "durum": "SAĞLIKLI"},
-                "kızılay": {"pet": 92, "cam": 5, "teneke": 70, "sira": 15, "durum": "BAKIM GEREKİYOR"}
-            }
-        }
-    }
-    
-    # Kademeli Okuma
+# Bu fonksiyon, makinenin içindeki sensörden "çekme" yapar
+def makine_verisi_cek(makine_ip):
     try:
-        return ag[sehir.lower()][ilce.lower()][mahalle.lower()]
+        # Gerçek makine protokolü (API endpoint)
+        response = requests.get(f"http://{makine_ip}/api/status", timeout=2)
+        return response.json()
     except:
-        return None
+        return {"hata": "Makineyle bağlantı koptu veya IP yanlış"}
 
-# Arayüz
-col1, col2, col3 = st.columns(3)
-with col1: sehir = st.text_input("Şehir:")
-with col2: ilce = st.text_input("İlçe:")
-with col3: mahalle = st.text_input("Mahalle:")
+st.title("⚡ SYSVOID // PROFESYONEL VERİ HATTI")
 
-if st.button(">>> AĞI TARA"):
-    sonuc = turkiye_ag_oku(sehir, ilce, mahalle)
-    
-    if sonuc:
-        st.subheader(f"📍 {sehir.upper()} / {ilce.upper()} / {mahalle.upper()}")
-        
-        # Okuyucu Paneli
-        c1, c2, c3 = st.columns(3)
-        c1.metric("PET", f"%{sonuc['pet']}")
-        c2.metric("CAM", f"%{sonuc['cam']}")
-        c3.metric("TENEKE", f"%{sonuc['teneke']}")
-        
-        st.metric("SAĞLIK DURUMU", sonuc['durum'])
-        st.write(f"👥 Sırada: {'Sıra Yok' if sonuc['sira'] == 0 else str(sonuc['sira'])+' Kişi'}")
+ip = st.text_input("Makine IP Adresi:", "192.168.1.50")
+
+if st.button(">>> SENSÖR VERİSİNİ ÇEK"):
+    data = makine_verisi_cek(ip)
+    if "hata" in data:
+        st.error(data["hata"])
     else:
-        st.error("Ağda bu lokasyon bulunamadı. (Test için: Ankara / Cankaya / Fatih)")
+        st.write("Veri akışı başarılı:", data)
