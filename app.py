@@ -1,22 +1,24 @@
 import streamlit as st
-import requests
 
-# Bu fonksiyon, makinenin içindeki sensörden "çekme" yapar
-def makine_verisi_cek(makine_ip):
-    try:
-        # Gerçek makine protokolü (API endpoint)
-        response = requests.get(f"http://{makine_ip}/api/status", timeout=2)
-        return response.json()
-    except:
-        return {"hata": "Makineyle bağlantı koptu veya IP yanlış"}
+st.set_page_config(page_title="SysVoid // Otonom Analiz", layout="wide")
 
-st.title("⚡ SYSVOID // PROFESYONEL VERİ HATTI")
+st.title("⚡ SYSVOID // MERKEZİ ANALİZ PANELİ")
 
-ip = st.text_input("Makine IP Adresi:", "192.168.1.50")
-
-if st.button(">>> SENSÖR VERİSİNİ ÇEK"):
-    data = makine_verisi_cek(ip)
-    if "hata" in data:
-        st.error(data["hata"])
+# Kuzeninin baktığı basit veri değil, biz "Anomali Tespiti" yapıyoruz
+def analiz_et(pet, cam, teneke):
+    # Makinenin verimlilik analizi (Profesyonel yaklaşım)
+    toplam = pet + cam + teneke
+    if toplam > 250:
+        return "KRİTİK: Aşırı Yüklenme - Servis Şart"
+    elif toplam < 50:
+        return "DÜŞÜK VERİM: Kullanım Az"
     else:
-        st.write("Veri akışı başarılı:", data)
+        return "SİSTEM STABİL"
+
+col1, col2, col3 = st.columns(3)
+p = col1.slider("PET", 0, 100, 50)
+c = col2.slider("CAM", 0, 100, 50)
+t = col3.slider("TENEKE", 0, 100, 50)
+
+st.write("---")
+st.subheader(f"📊 Durum: {analiz_et(p, c, t)}")
